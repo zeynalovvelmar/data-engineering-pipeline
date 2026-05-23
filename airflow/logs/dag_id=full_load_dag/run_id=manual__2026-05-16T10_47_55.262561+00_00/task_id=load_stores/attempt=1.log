@@ -1,0 +1,28 @@
+[2026-05-16T10:47:56.733+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-05-16T10:47:56.739+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: full_load_dag.load_stores manual__2026-05-16T10:47:55.262561+00:00 [queued]>
+[2026-05-16T10:47:56.741+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: full_load_dag.load_stores manual__2026-05-16T10:47:55.262561+00:00 [queued]>
+[2026-05-16T10:47:56.741+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2026-05-16T10:47:56.746+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): load_stores> on 2026-05-16 10:47:55.262561+00:00
+[2026-05-16T10:47:56.748+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:62: DeprecationWarning: This process (pid=426) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2026-05-16T10:47:56.749+0000] {standard_task_runner.py:64} INFO - Started process 428 to run task
+[2026-05-16T10:47:56.749+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'full_load_dag', 'load_stores', 'manual__2026-05-16T10:47:55.262561+00:00', '--job-id', '84', '--raw', '--subdir', 'DAGS_FOLDER/full_load.py', '--cfg-path', '/tmp/tmp1rpo7nt1']
+[2026-05-16T10:47:56.750+0000] {standard_task_runner.py:91} INFO - Job 84: Subtask load_stores
+[2026-05-16T10:47:56.770+0000] {task_command.py:426} INFO - Running <TaskInstance: full_load_dag.load_stores manual__2026-05-16T10:47:55.262561+00:00 [running]> on host 0161a3f0b6d6
+[2026-05-16T10:47:56.797+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='de_course' AIRFLOW_CTX_DAG_ID='full_load_dag' AIRFLOW_CTX_TASK_ID='load_stores' AIRFLOW_CTX_EXECUTION_DATE='2026-05-16T10:47:55.262561+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-16T10:47:55.262561+00:00'
+[2026-05-16T10:47:56.798+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-05-16T10:47:56.798+0000] {full_load.py:53} INFO - [stores] Source-dan oxunur: stores
+[2026-05-16T10:47:56.801+0000] {base.py:84} INFO - Using connection ID 'source_db' for task execution.
+[2026-05-16T10:47:56.802+0000] {sql.py:495} INFO - Running statement: SELECT store_id, store_name, city, country, address, phone, email, opened_date, is_active FROM stores;, parameters: None
+[2026-05-16T10:47:56.803+0000] {sql.py:504} INFO - Rows affected: 5
+[2026-05-16T10:47:56.803+0000] {full_load.py:56} INFO - [stores] 5 sətir tapıldı
+[2026-05-16T10:47:56.805+0000] {base.py:84} INFO - Using connection ID 'target_db' for task execution.
+[2026-05-16T10:47:56.806+0000] {full_load.py:68} INFO - [stores] TRUNCATE: staging.stg_stores
+[2026-05-16T10:47:56.809+0000] {full_load.py:84} INFO - [stores] 5 sətir yükləndi → staging.stg_stores
+[2026-05-16T10:47:56.809+0000] {python.py:237} INFO - Done. Returned value was: None
+[2026-05-16T10:47:56.809+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-05-16T10:47:56.813+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=full_load_dag, task_id=load_stores, run_id=manual__2026-05-16T10:47:55.262561+00:00, execution_date=20260516T104755, start_date=20260516T104756, end_date=20260516T104756
+[2026-05-16T10:47:56.842+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 0
+[2026-05-16T10:47:56.852+0000] {taskinstance.py:3503} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2026-05-16T10:47:56.852+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

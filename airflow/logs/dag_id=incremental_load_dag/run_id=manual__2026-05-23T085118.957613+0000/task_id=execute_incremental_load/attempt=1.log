@@ -1,0 +1,259 @@
+[2026-05-23T08:51:21.332+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-05-23T08:51:21.374+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: incremental_load_dag.execute_incremental_load manual__2026-05-23T08:51:18.957613+00:00 [queued]>
+[2026-05-23T08:51:21.395+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: incremental_load_dag.execute_incremental_load manual__2026-05-23T08:51:18.957613+00:00 [queued]>
+[2026-05-23T08:51:21.396+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2026-05-23T08:51:21.424+0000] {taskinstance.py:2890} INFO - Executing <Task(SQLExecuteQueryOperator): execute_incremental_load> on 2026-05-23 08:51:18.957613+00:00
+[2026-05-23T08:51:21.444+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'incremental_load_dag', 'execute_incremental_load', 'manual__2026-05-23T08:51:18.957613+00:00', '--job-id', '3', '--raw', '--subdir', 'DAGS_FOLDER/inc_load.py', '--cfg-path', '/tmp/tmpz30ifo9n']
+[2026-05-23T08:51:21.451+0000] {standard_task_runner.py:105} INFO - Job 3: Subtask execute_incremental_load
+[2026-05-23T08:51:21.460+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70 DeprecationWarning: This process (pid=1032) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-05-23T08:51:21.464+0000] {standard_task_runner.py:72} INFO - Started process 1033 to run task
+[2026-05-23T08:51:21.586+0000] {task_command.py:467} INFO - Running <TaskInstance: incremental_load_dag.execute_incremental_load manual__2026-05-23T08:51:18.957613+00:00 [running]> on host 8f2d94a59d0d
+[2026-05-23T08:51:21.740+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='incremental_load_dag' AIRFLOW_CTX_TASK_ID='execute_incremental_load' AIRFLOW_CTX_EXECUTION_DATE='2026-05-23T08:51:18.957613+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-23T08:51:18.957613+00:00'
+[2026-05-23T08:51:21.741+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2026-05-23T08:51:21.775+0000] {sql.py:295} INFO - Executing: -- SCD1
+INSERT INTO staging.stg_customers (
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        city,
+        country,
+        birth_date,
+        gender,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.customer_id,
+    s.first_name,
+    s.last_name,
+    s.email,
+    s.phone,
+    s.city,
+    s.country,
+    s.birth_date,
+    s.gender,
+    s.created_at,
+    s.updated_at,
+    NOW(),
+    'manual__2026-05-23T08:51:18.957613+00:00'
+FROM ext_source.customers s ON CONFLICT (customer_id) DO
+UPDATE
+SET first_name = EXCLUDED.first_name,
+    last_name = EXCLUDED.last_name,
+    email = EXCLUDED.email,
+    phone = EXCLUDED.phone,
+    city = EXCLUDED.city,
+    country = EXCLUDED.country,
+    birth_date = EXCLUDED.birth_date,
+    gender = EXCLUDED.gender,
+    updated_at = EXCLUDED.updated_at,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;
+INSERT INTO staging.stg_products (
+        product_id,
+        product_name,
+        category,
+        brand,
+        price,
+        cost,
+        stock_quantity,
+        is_active,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.product_id,
+    s.product_name,
+    s.category,
+    s.brand,
+    s.price,
+    s.cost,
+    s.stock_quantity,
+    s.is_active,
+    s.created_at,
+    s.updated_at,
+    NOW(),
+    'manual__2026-05-23T08:51:18.957613+00:00'
+FROM ext_source.products s ON CONFLICT (product_id) DO
+UPDATE
+SET product_name = EXCLUDED.product_name,
+    category = EXCLUDED.category,
+    brand = EXCLUDED.brand,
+    price = EXCLUDED.price,
+    cost = EXCLUDED.cost,
+    stock_quantity = EXCLUDED.stock_quantity,
+    is_active = EXCLUDED.is_active,
+    updated_at = EXCLUDED.updated_at,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;
+[2026-05-23T08:51:21.777+0000] {crypto.py:82} WARNING - empty cryptography key - values will not be stored encrypted.
+[2026-05-23T08:51:21.778+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T08:51:21.785+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T08:51:21.799+0000] {sql.py:511} INFO - Running statement: -- SCD1
+INSERT INTO staging.stg_customers (
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        city,
+        country,
+        birth_date,
+        gender,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.customer_id,
+    s.first_name,
+    s.last_name,
+    s.email,
+    s.phone,
+    s.city,
+    s.country,
+    s.birth_date,
+    s.gender,
+    s.created_at,
+    s.updated_at,
+    NOW(),
+    'manual__2026-05-23T08:51:18.957613+00:00'
+FROM ext_source.customers s ON CONFLICT (customer_id) DO
+UPDATE
+SET first_name = EXCLUDED.first_name,
+    last_name = EXCLUDED.last_name,
+    email = EXCLUDED.email,
+    phone = EXCLUDED.phone,
+    city = EXCLUDED.city,
+    country = EXCLUDED.country,
+    birth_date = EXCLUDED.birth_date,
+    gender = EXCLUDED.gender,
+    updated_at = EXCLUDED.updated_at,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;
+INSERT INTO staging.stg_products (
+        product_id,
+        product_name,
+        category,
+        brand,
+        price,
+        cost,
+        stock_quantity,
+        is_active,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.product_id,
+    s.product_name,
+    s.category,
+    s.brand,
+    s.price,
+    s.cost,
+    s.stock_quantity,
+    s.is_active,
+    s.created_at,
+    s.updated_at,
+    NOW(),
+    'manual__2026-05-23T08:51:18.957613+00:00'
+FROM ext_source.products s ON CONFLICT (product_id) DO
+UPDATE
+SET product_name = EXCLUDED.product_name,
+    category = EXCLUDED.category,
+    brand = EXCLUDED.brand,
+    price = EXCLUDED.price,
+    cost = EXCLUDED.cost,
+    stock_quantity = EXCLUDED.stock_quantity,
+    is_active = EXCLUDED.is_active,
+    updated_at = EXCLUDED.updated_at,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;, parameters: None
+[2026-05-23T08:51:21.832+0000] {taskinstance.py:3313} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 768, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/operators/sql.py", line 301, in execute
+    output = hook.run(
+             ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 467, in run
+    self._run_command(cur, sql_statement, parameters)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 516, in _run_command
+    cur.execute(sql_statement)
+psycopg2.errors.InvalidColumnReference: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+[2026-05-23T08:51:21.857+0000] {taskinstance.py:1226} INFO - Marking task as FAILED. dag_id=incremental_load_dag, task_id=execute_incremental_load, run_id=manual__2026-05-23T08:51:18.957613+00:00, execution_date=20260523T085118, start_date=20260523T085121, end_date=20260523T085121
+[2026-05-23T08:51:21.913+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2026-05-23T08:51:21.915+0000] {standard_task_runner.py:124} ERROR - Failed to execute job 3 for task execute_incremental_load (there is no unique or exclusion constraint matching the ON CONFLICT specification
+; 1033)
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/task/task_runner/standard_task_runner.py", line 117, in _start_by_fork
+    ret = args.func(args, dag=self.dag)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 256, in _run_task_by_selected_method
+    return _run_raw_task(args, ti)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 341, in _run_raw_task
+    return ti._run_raw_task(
+           ^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3006, in _run_raw_task
+    return _run_raw_task(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 274, in _run_raw_task
+    TaskInstance._execute_task_with_callbacks(
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3161, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3185, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 768, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/operators/sql.py", line 301, in execute
+    output = hook.run(
+             ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 467, in run
+    self._run_command(cur, sql_statement, parameters)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 516, in _run_command
+    cur.execute(sql_statement)
+psycopg2.errors.InvalidColumnReference: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+[2026-05-23T08:51:21.967+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 1
+[2026-05-23T08:51:22.012+0000] {taskinstance.py:3901} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-23T08:51:22.022+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

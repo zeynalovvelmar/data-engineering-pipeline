@@ -1,0 +1,327 @@
+[2026-05-23T09:17:39.609+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-05-23T09:17:39.651+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: incremental_load_dag.execute_incremental_load manual__2026-05-23T09:17:36.962892+00:00 [queued]>
+[2026-05-23T09:17:39.669+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: incremental_load_dag.execute_incremental_load manual__2026-05-23T09:17:36.962892+00:00 [queued]>
+[2026-05-23T09:17:39.671+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2026-05-23T09:17:39.699+0000] {taskinstance.py:2890} INFO - Executing <Task(SQLExecuteQueryOperator): execute_incremental_load> on 2026-05-23 09:17:36.962892+00:00
+[2026-05-23T09:17:39.712+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'incremental_load_dag', 'execute_incremental_load', 'manual__2026-05-23T09:17:36.962892+00:00', '--job-id', '7', '--raw', '--subdir', 'DAGS_FOLDER/inc_load.py', '--cfg-path', '/tmp/tmpefet8tdm']
+[2026-05-23T09:17:39.716+0000] {standard_task_runner.py:105} INFO - Job 7: Subtask execute_incremental_load
+[2026-05-23T09:17:39.716+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70 DeprecationWarning: This process (pid=2069) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-05-23T09:17:39.718+0000] {standard_task_runner.py:72} INFO - Started process 2070 to run task
+[2026-05-23T09:17:39.826+0000] {task_command.py:467} INFO - Running <TaskInstance: incremental_load_dag.execute_incremental_load manual__2026-05-23T09:17:36.962892+00:00 [running]> on host 8f2d94a59d0d
+[2026-05-23T09:17:39.984+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='incremental_load_dag' AIRFLOW_CTX_TASK_ID='execute_incremental_load' AIRFLOW_CTX_EXECUTION_DATE='2026-05-23T09:17:36.962892+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-23T09:17:36.962892+00:00'
+[2026-05-23T09:17:39.986+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2026-05-23T09:17:40.017+0000] {sql.py:295} INFO - Executing: -- SCD1
+-- customers
+INSERT INTO staging.stg_customers (
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        city,
+        country,
+        birth_date,
+        gender,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.customer_id,
+    s.first_name,
+    s.last_name,
+    s.email,
+    s.phone,
+    s.city,
+    s.country,
+    s.birth_date,
+    s.gender,
+    s.created_at,
+    s.updated_at,
+    NOW(),
+    'manual__2026-05-23T09:17:36.962892+00:00'
+FROM ext_source.customers s ON CONFLICT (customer_id) DO
+UPDATE
+SET first_name = EXCLUDED.first_name,
+    last_name = EXCLUDED.last_name,
+    email = EXCLUDED.email,
+    phone = EXCLUDED.phone,
+    city = EXCLUDED.city,
+    country = EXCLUDED.country,
+    birth_date = EXCLUDED.birth_date,
+    gender = EXCLUDED.gender,
+    updated_at = EXCLUDED.updated_at,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;
+-- products
+INSERT INTO staging.stg_products (
+        product_id,
+        product_name,
+        category,
+        brand,
+        price,
+        cost,
+        stock_quantity,
+        is_active,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.product_id,
+    s.product_name,
+    s.category,
+    s.brand,
+    s.price,
+    s.cost,
+    s.stock_quantity,
+    s.is_active,
+    s.created_at,
+    s.updated_at,
+    NOW(),
+    'manual__2026-05-23T09:17:36.962892+00:00'
+FROM ext_source.products s ON CONFLICT (product_id) DO
+UPDATE
+SET product_name = EXCLUDED.product_name,
+    category = EXCLUDED.category,
+    brand = EXCLUDED.brand,
+    price = EXCLUDED.price,
+    cost = EXCLUDED.cost,
+    stock_quantity = EXCLUDED.stock_quantity,
+    is_active = EXCLUDED.is_active,
+    updated_at = EXCLUDED.updated_at,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;
+-- ORDERS
+-- ORDERS Incremental Load (updated_at silinib)
+INSERT INTO staging.stg_orders (
+        order_id,
+        customer_id,
+        store_id,
+        employee_id,
+        order_date,
+        status,
+        total_amount,
+        created_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.order_id,
+    s.customer_id,
+    s.store_id,
+    s.employee_id,
+    s.order_date,
+    s.status,
+    s.total_amount,
+    s.created_at,
+    NOW(),
+    'manual__2026-05-23T09:17:36.962892+00:00'
+FROM ext_source.orders s ON CONFLICT (order_id) DO
+UPDATE
+SET customer_id = EXCLUDED.customer_id,
+    store_id = EXCLUDED.store_id,
+    employee_id = EXCLUDED.employee_id,
+    order_date = EXCLUDED.order_date,
+    status = EXCLUDED.status,
+    total_amount = EXCLUDED.total_amount,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;
+-- ORDER_ITEMS
+INSERT INTO staging.stg_order_items (
+        item_id,
+        order_id,
+        product_id,
+        quantity,
+        unit_price,
+        discount,
+        total_price,
+        created_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.item_id,
+    s.order_id,
+    s.product_id,
+    s.quantity,
+    s.unit_price,
+    s.discount,
+    s.total_price,
+    s.created_at,
+    NOW(),
+    'manual__2026-05-23T09:17:36.962892+00:00'
+FROM ext_source.order_items s ON CONFLICT (item_id) DO
+UPDATE
+SET order_id = EXCLUDED.order_id,
+    product_id = EXCLUDED.product_id,
+    quantity = EXCLUDED.quantity,
+    unit_price = EXCLUDED.unit_price,
+    discount = EXCLUDED.discount,
+    total_price = EXCLUDED.total_price,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;
+[2026-05-23T09:17:40.021+0000] {crypto.py:82} WARNING - empty cryptography key - values will not be stored encrypted.
+[2026-05-23T09:17:40.024+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T09:17:40.032+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T09:17:40.048+0000] {sql.py:511} INFO - Running statement: -- SCD1
+-- customers
+INSERT INTO staging.stg_customers (
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        city,
+        country,
+        birth_date,
+        gender,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.customer_id,
+    s.first_name,
+    s.last_name,
+    s.email,
+    s.phone,
+    s.city,
+    s.country,
+    s.birth_date,
+    s.gender,
+    s.created_at,
+    s.updated_at,
+    NOW(),
+    'manual__2026-05-23T09:17:36.962892+00:00'
+FROM ext_source.customers s ON CONFLICT (customer_id) DO
+UPDATE
+SET first_name = EXCLUDED.first_name,
+    last_name = EXCLUDED.last_name,
+    email = EXCLUDED.email,
+    phone = EXCLUDED.phone,
+    city = EXCLUDED.city,
+    country = EXCLUDED.country,
+    birth_date = EXCLUDED.birth_date,
+    gender = EXCLUDED.gender,
+    updated_at = EXCLUDED.updated_at,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;
+-- products
+INSERT INTO staging.stg_products (
+        product_id,
+        product_name,
+        category,
+        brand,
+        price,
+        cost,
+        stock_quantity,
+        is_active,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.product_id,
+    s.product_name,
+    s.category,
+    s.brand,
+    s.price,
+    s.cost,
+    s.stock_quantity,
+    s.is_active,
+    s.created_at,
+    s.updated_at,
+    NOW(),
+    'manual__2026-05-23T09:17:36.962892+00:00'
+FROM ext_source.products s ON CONFLICT (product_id) DO
+UPDATE
+SET product_name = EXCLUDED.product_name,
+    category = EXCLUDED.category,
+    brand = EXCLUDED.brand,
+    price = EXCLUDED.price,
+    cost = EXCLUDED.cost,
+    stock_quantity = EXCLUDED.stock_quantity,
+    is_active = EXCLUDED.is_active,
+    updated_at = EXCLUDED.updated_at,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;
+-- ORDERS
+-- ORDERS Incremental Load (updated_at silinib)
+INSERT INTO staging.stg_orders (
+        order_id,
+        customer_id,
+        store_id,
+        employee_id,
+        order_date,
+        status,
+        total_amount,
+        created_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.order_id,
+    s.customer_id,
+    s.store_id,
+    s.employee_id,
+    s.order_date,
+    s.status,
+    s.total_amount,
+    s.created_at,
+    NOW(),
+    'manual__2026-05-23T09:17:36.962892+00:00'
+FROM ext_source.orders s ON CONFLICT (order_id) DO
+UPDATE
+SET customer_id = EXCLUDED.customer_id,
+    store_id = EXCLUDED.store_id,
+    employee_id = EXCLUDED.employee_id,
+    order_date = EXCLUDED.order_date,
+    status = EXCLUDED.status,
+    total_amount = EXCLUDED.total_amount,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;
+-- ORDER_ITEMS
+INSERT INTO staging.stg_order_items (
+        item_id,
+        order_id,
+        product_id,
+        quantity,
+        unit_price,
+        discount,
+        total_price,
+        created_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT s.item_id,
+    s.order_id,
+    s.product_id,
+    s.quantity,
+    s.unit_price,
+    s.discount,
+    s.total_price,
+    s.created_at,
+    NOW(),
+    'manual__2026-05-23T09:17:36.962892+00:00'
+FROM ext_source.order_items s ON CONFLICT (item_id) DO
+UPDATE
+SET order_id = EXCLUDED.order_id,
+    product_id = EXCLUDED.product_id,
+    quantity = EXCLUDED.quantity,
+    unit_price = EXCLUDED.unit_price,
+    discount = EXCLUDED.discount,
+    total_price = EXCLUDED.total_price,
+    etl_load_date = EXCLUDED.etl_load_date,
+    etl_batch_id = EXCLUDED.etl_batch_id;, parameters: None
+[2026-05-23T09:17:40.083+0000] {sql.py:520} INFO - Rows affected: 56
+[2026-05-23T09:17:40.092+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/hooks/sql.py:470 DeprecationWarning: Import of fetch_all_handler from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T09:17:40.095+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/hooks/sql.py:471 DeprecationWarning: Import of return_single_query_results from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T09:17:40.100+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/hooks/sql.py:486 DeprecationWarning: Import of return_single_query_results from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T09:17:40.104+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/operators/sql.py:311 DeprecationWarning: Import of return_single_query_results from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T09:17:40.125+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2026-05-23T09:17:40.127+0000] {taskinstance.py:353} INFO - Marking task as SUCCESS. dag_id=incremental_load_dag, task_id=execute_incremental_load, run_id=manual__2026-05-23T09:17:36.962892+00:00, execution_date=20260523T091736, start_date=20260523T091739, end_date=20260523T091740
+[2026-05-23T09:17:40.218+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2026-05-23T09:17:40.264+0000] {taskinstance.py:3901} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-23T09:17:40.268+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

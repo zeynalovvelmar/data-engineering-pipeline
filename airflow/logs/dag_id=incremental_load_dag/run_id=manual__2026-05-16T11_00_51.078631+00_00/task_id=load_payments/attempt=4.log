@@ -1,0 +1,30 @@
+[2026-05-16T11:11:08.583+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-05-16T11:11:08.597+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: incremental_load_dag.load_payments manual__2026-05-16T11:00:51.078631+00:00 [queued]>
+[2026-05-16T11:11:08.603+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: incremental_load_dag.load_payments manual__2026-05-16T11:00:51.078631+00:00 [queued]>
+[2026-05-16T11:11:08.604+0000] {taskinstance.py:2306} INFO - Starting attempt 4 of 4
+[2026-05-16T11:11:08.616+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): load_payments> on 2026-05-16 11:00:51.078631+00:00
+[2026-05-16T11:11:08.627+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:62: DeprecationWarning: This process (pid=842) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2026-05-16T11:11:08.632+0000] {standard_task_runner.py:64} INFO - Started process 852 to run task
+[2026-05-16T11:11:08.632+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'incremental_load_dag', 'load_payments', 'manual__2026-05-16T11:00:51.078631+00:00', '--job-id', '118', '--raw', '--subdir', 'DAGS_FOLDER/inc_load.py', '--cfg-path', '/tmp/tmp682ali0x']
+[2026-05-16T11:11:08.638+0000] {standard_task_runner.py:91} INFO - Job 118: Subtask load_payments
+[2026-05-16T11:11:08.686+0000] {task_command.py:426} INFO - Running <TaskInstance: incremental_load_dag.load_payments manual__2026-05-16T11:00:51.078631+00:00 [running]> on host 0161a3f0b6d6
+[2026-05-16T11:11:08.781+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='incremental_load_dag' AIRFLOW_CTX_TASK_ID='load_payments' AIRFLOW_CTX_EXECUTION_DATE='2026-05-16T11:00:51.078631+00:00' AIRFLOW_CTX_TRY_NUMBER='4' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-16T11:00:51.078631+00:00'
+[2026-05-16T11:11:08.781+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-05-16T11:11:08.790+0000] {base.py:84} INFO - Using connection ID 'target_db' for task execution.
+[2026-05-16T11:11:08.794+0000] {sql.py:495} INFO - Running statement: SELECT MAX(payment_date) FROM staging.stg_payments;, parameters: None
+[2026-05-16T11:11:08.796+0000] {sql.py:504} INFO - Rows affected: 1
+[2026-05-16T11:11:08.796+0000] {logging_mixin.py:188} INFO - Watermark: 2024-09-15 11:50:00
+[2026-05-16T11:11:08.801+0000] {base.py:84} INFO - Using connection ID 'source_db' for task execution.
+[2026-05-16T11:11:08.808+0000] {sql.py:495} INFO - Running statement: SELECT payment_id, order_id, payment_method, amount, payment_date, status, transaction_ref FROM payments WHERE payment_date > %s;, parameters: [datetime.datetime(2024, 9, 15, 11, 50)]
+[2026-05-16T11:11:08.811+0000] {sql.py:504} INFO - Rows affected: 1
+[2026-05-16T11:11:08.814+0000] {logging_mixin.py:188} INFO - payments: 1 sətir tapıldı
+[2026-05-16T11:11:08.822+0000] {base.py:84} INFO - Using connection ID 'target_db' for task execution.
+[2026-05-16T11:11:08.837+0000] {logging_mixin.py:188} INFO - staging.stg_payments: 1 sətir yükləndi
+[2026-05-16T11:11:08.838+0000] {python.py:237} INFO - Done. Returned value was: None
+[2026-05-16T11:11:08.840+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-05-16T11:11:08.849+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=incremental_load_dag, task_id=load_payments, run_id=manual__2026-05-16T11:00:51.078631+00:00, execution_date=20260516T110051, start_date=20260516T111108, end_date=20260516T111108
+[2026-05-16T11:11:08.891+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 0
+[2026-05-16T11:11:08.917+0000] {taskinstance.py:3503} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-16T11:11:08.918+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

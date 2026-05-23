@@ -1,0 +1,29 @@
+[2026-05-16T11:03:56.821+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-05-16T11:03:56.855+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: incremental_load_dag.load_order_items manual__2026-05-16T11:00:51.078631+00:00 [queued]>
+[2026-05-16T11:03:56.862+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: incremental_load_dag.load_order_items manual__2026-05-16T11:00:51.078631+00:00 [queued]>
+[2026-05-16T11:03:56.863+0000] {taskinstance.py:2306} INFO - Starting attempt 3 of 3
+[2026-05-16T11:03:56.874+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): load_order_items> on 2026-05-16 11:00:51.078631+00:00
+[2026-05-16T11:03:56.883+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:62: DeprecationWarning: This process (pid=730) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2026-05-16T11:03:56.885+0000] {standard_task_runner.py:64} INFO - Started process 743 to run task
+[2026-05-16T11:03:56.888+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'incremental_load_dag', 'load_order_items', 'manual__2026-05-16T11:00:51.078631+00:00', '--job-id', '116', '--raw', '--subdir', 'DAGS_FOLDER/inc_load.py', '--cfg-path', '/tmp/tmpigg1qfrp']
+[2026-05-16T11:03:56.896+0000] {standard_task_runner.py:91} INFO - Job 116: Subtask load_order_items
+[2026-05-16T11:03:56.925+0000] {task_command.py:426} INFO - Running <TaskInstance: incremental_load_dag.load_order_items manual__2026-05-16T11:00:51.078631+00:00 [running]> on host 0161a3f0b6d6
+[2026-05-16T11:03:56.974+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='incremental_load_dag' AIRFLOW_CTX_TASK_ID='load_order_items' AIRFLOW_CTX_EXECUTION_DATE='2026-05-16T11:00:51.078631+00:00' AIRFLOW_CTX_TRY_NUMBER='3' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-16T11:00:51.078631+00:00'
+[2026-05-16T11:03:56.976+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-05-16T11:03:56.982+0000] {base.py:84} INFO - Using connection ID 'target_db' for task execution.
+[2026-05-16T11:03:56.986+0000] {sql.py:495} INFO - Running statement: SELECT MAX(created_at) FROM staging.stg_order_items;, parameters: None
+[2026-05-16T11:03:56.986+0000] {sql.py:504} INFO - Rows affected: 1
+[2026-05-16T11:03:56.988+0000] {logging_mixin.py:188} INFO - Watermark: 2024-09-15 11:45:00
+[2026-05-16T11:03:56.992+0000] {base.py:84} INFO - Using connection ID 'source_db' for task execution.
+[2026-05-16T11:03:56.995+0000] {sql.py:495} INFO - Running statement: SELECT item_id, order_id, product_id, quantity, unit_price, discount, total_price, created_at FROM order_items WHERE created_at > %s;, parameters: [datetime.datetime(2024, 9, 15, 11, 45)]
+[2026-05-16T11:03:56.997+0000] {sql.py:504} INFO - Rows affected: 0
+[2026-05-16T11:03:56.997+0000] {logging_mixin.py:188} INFO - order_items: 0 sətir tapıldı
+[2026-05-16T11:03:56.997+0000] {logging_mixin.py:188} INFO - Delta yoxdur.
+[2026-05-16T11:03:56.997+0000] {python.py:237} INFO - Done. Returned value was: None
+[2026-05-16T11:03:56.997+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-05-16T11:03:57.002+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=incremental_load_dag, task_id=load_order_items, run_id=manual__2026-05-16T11:00:51.078631+00:00, execution_date=20260516T110051, start_date=20260516T110356, end_date=20260516T110357
+[2026-05-16T11:03:57.020+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 0
+[2026-05-16T11:03:57.026+0000] {taskinstance.py:3503} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-16T11:03:57.026+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

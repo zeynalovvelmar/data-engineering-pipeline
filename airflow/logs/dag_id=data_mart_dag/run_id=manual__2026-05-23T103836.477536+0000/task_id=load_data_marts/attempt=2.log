@@ -1,0 +1,193 @@
+[2026-05-23T10:40:40.397+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-05-23T10:40:40.442+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: data_mart_dag.load_data_marts manual__2026-05-23T10:38:36.477536+00:00 [queued]>
+[2026-05-23T10:40:40.462+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: data_mart_dag.load_data_marts manual__2026-05-23T10:38:36.477536+00:00 [queued]>
+[2026-05-23T10:40:40.463+0000] {taskinstance.py:2867} INFO - Starting attempt 2 of 2
+[2026-05-23T10:40:40.494+0000] {taskinstance.py:2890} INFO - Executing <Task(SQLExecuteQueryOperator): load_data_marts> on 2026-05-23 10:38:36.477536+00:00
+[2026-05-23T10:40:40.512+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'data_mart_dag', 'load_data_marts', 'manual__2026-05-23T10:38:36.477536+00:00', '--job-id', '25', '--raw', '--subdir', 'DAGS_FOLDER/data_mart.py', '--cfg-path', '/tmp/tmpxzmwz3jt']
+[2026-05-23T10:40:40.522+0000] {standard_task_runner.py:105} INFO - Job 25: Subtask load_data_marts
+[2026-05-23T10:40:40.532+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70 DeprecationWarning: This process (pid=5353) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-05-23T10:40:40.534+0000] {standard_task_runner.py:72} INFO - Started process 5354 to run task
+[2026-05-23T10:40:40.678+0000] {task_command.py:467} INFO - Running <TaskInstance: data_mart_dag.load_data_marts manual__2026-05-23T10:38:36.477536+00:00 [running]> on host 8f2d94a59d0d
+[2026-05-23T10:40:40.878+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='data_mart_dag' AIRFLOW_CTX_TASK_ID='load_data_marts' AIRFLOW_CTX_EXECUTION_DATE='2026-05-23T10:38:36.477536+00:00' AIRFLOW_CTX_TRY_NUMBER='2' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-23T10:38:36.477536+00:00'
+[2026-05-23T10:40:40.881+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2026-05-23T10:40:40.938+0000] {sql.py:295} INFO - Executing: -- 1. 
+TRUNCATE TABLE data_mart.mart_product_performance;
+INSERT INTO data_mart.mart_product_performance (
+        product_name,
+        category,
+        brand,
+        total_sold,
+        total_revenue,
+        total_profit
+    ) -- Sütunları açıq qeyd edin!
+SELECT p.product_name,
+    p.category,
+    p.brand,
+    SUM(f.quantity),
+    SUM(f.net_amount),
+    SUM(f.profit_amount)
+FROM dwh.fact_sales f
+    JOIN dwh.dim_product p ON p.product_key = f.product_key
+WHERE f.order_status != 'cancelled'
+GROUP BY 1,
+    2,
+    3;
+-- 2. 
+TRUNCATE TABLE data_mart.mart_daily_sales;
+INSERT INTO data_mart.mart_daily_sales (
+        report_date,
+        store_name,
+        city,
+        total_orders,
+        total_items,
+        net_revenue
+    ) -- Sütunları açıq qeyd edin!
+SELECT d.full_date,
+    s.store_name,
+    s.city,
+    COUNT(DISTINCT f.order_id),
+    SUM(f.quantity),
+    SUM(f.net_amount)
+FROM dwh.fact_sales f
+    JOIN dwh.dim_date d ON d.date_key = f.date_key
+    JOIN dwh.dim_store s ON s.store_key = f.store_key
+GROUP BY 1,
+    2,
+    3;
+[2026-05-23T10:40:40.943+0000] {crypto.py:82} WARNING - empty cryptography key - values will not be stored encrypted.
+[2026-05-23T10:40:40.945+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T10:40:40.953+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T10:40:40.968+0000] {sql.py:511} INFO - Running statement: -- 1. 
+TRUNCATE TABLE data_mart.mart_product_performance;
+INSERT INTO data_mart.mart_product_performance (
+        product_name,
+        category,
+        brand,
+        total_sold,
+        total_revenue,
+        total_profit
+    ) -- Sütunları açıq qeyd edin!
+SELECT p.product_name,
+    p.category,
+    p.brand,
+    SUM(f.quantity),
+    SUM(f.net_amount),
+    SUM(f.profit_amount)
+FROM dwh.fact_sales f
+    JOIN dwh.dim_product p ON p.product_key = f.product_key
+WHERE f.order_status != 'cancelled'
+GROUP BY 1,
+    2,
+    3;
+-- 2. 
+TRUNCATE TABLE data_mart.mart_daily_sales;
+INSERT INTO data_mart.mart_daily_sales (
+        report_date,
+        store_name,
+        city,
+        total_orders,
+        total_items,
+        net_revenue
+    ) -- Sütunları açıq qeyd edin!
+SELECT d.full_date,
+    s.store_name,
+    s.city,
+    COUNT(DISTINCT f.order_id),
+    SUM(f.quantity),
+    SUM(f.net_amount)
+FROM dwh.fact_sales f
+    JOIN dwh.dim_date d ON d.date_key = f.date_key
+    JOIN dwh.dim_store s ON s.store_key = f.store_key
+GROUP BY 1,
+    2,
+    3;, parameters: None
+[2026-05-23T10:40:40.982+0000] {taskinstance.py:3313} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 768, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/operators/sql.py", line 301, in execute
+    output = hook.run(
+             ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 467, in run
+    self._run_command(cur, sql_statement, parameters)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 516, in _run_command
+    cur.execute(sql_statement)
+psycopg2.errors.UndefinedColumn: column "total_sold" of relation "mart_product_performance" does not exist
+LINE 7:         total_sold,
+                ^
+
+[2026-05-23T10:40:41.022+0000] {taskinstance.py:1226} INFO - Marking task as FAILED. dag_id=data_mart_dag, task_id=load_data_marts, run_id=manual__2026-05-23T10:38:36.477536+00:00, execution_date=20260523T103836, start_date=20260523T104040, end_date=20260523T104041
+[2026-05-23T10:40:41.128+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2026-05-23T10:40:41.130+0000] {standard_task_runner.py:124} ERROR - Failed to execute job 25 for task load_data_marts (column "total_sold" of relation "mart_product_performance" does not exist
+LINE 7:         total_sold,
+                ^
+; 5354)
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/task/task_runner/standard_task_runner.py", line 117, in _start_by_fork
+    ret = args.func(args, dag=self.dag)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 256, in _run_task_by_selected_method
+    return _run_raw_task(args, ti)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 341, in _run_raw_task
+    return ti._run_raw_task(
+           ^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3006, in _run_raw_task
+    return _run_raw_task(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 274, in _run_raw_task
+    TaskInstance._execute_task_with_callbacks(
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3161, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3185, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 768, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/operators/sql.py", line 301, in execute
+    output = hook.run(
+             ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 467, in run
+    self._run_command(cur, sql_statement, parameters)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 516, in _run_command
+    cur.execute(sql_statement)
+psycopg2.errors.UndefinedColumn: column "total_sold" of relation "mart_product_performance" does not exist
+LINE 7:         total_sold,
+                ^
+
+[2026-05-23T10:40:41.156+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 1
+[2026-05-23T10:40:41.202+0000] {taskinstance.py:3901} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-23T10:40:41.206+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

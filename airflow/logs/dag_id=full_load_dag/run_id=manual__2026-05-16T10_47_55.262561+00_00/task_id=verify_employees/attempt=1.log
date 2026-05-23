@@ -1,0 +1,24 @@
+[2026-05-16T10:48:00.014+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-05-16T10:48:00.021+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: full_load_dag.verify_employees manual__2026-05-16T10:47:55.262561+00:00 [queued]>
+[2026-05-16T10:48:00.023+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: full_load_dag.verify_employees manual__2026-05-16T10:47:55.262561+00:00 [queued]>
+[2026-05-16T10:48:00.023+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2026-05-16T10:48:00.026+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): verify_employees> on 2026-05-16 10:47:55.262561+00:00
+[2026-05-16T10:48:00.029+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:62: DeprecationWarning: This process (pid=435) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2026-05-16T10:48:00.030+0000] {standard_task_runner.py:64} INFO - Started process 437 to run task
+[2026-05-16T10:48:00.030+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'full_load_dag', 'verify_employees', 'manual__2026-05-16T10:47:55.262561+00:00', '--job-id', '87', '--raw', '--subdir', 'DAGS_FOLDER/full_load.py', '--cfg-path', '/tmp/tmp6uavyqm7']
+[2026-05-16T10:48:00.031+0000] {standard_task_runner.py:91} INFO - Job 87: Subtask verify_employees
+[2026-05-16T10:48:00.046+0000] {task_command.py:426} INFO - Running <TaskInstance: full_load_dag.verify_employees manual__2026-05-16T10:47:55.262561+00:00 [running]> on host 0161a3f0b6d6
+[2026-05-16T10:48:00.070+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='de_course' AIRFLOW_CTX_DAG_ID='full_load_dag' AIRFLOW_CTX_TASK_ID='verify_employees' AIRFLOW_CTX_EXECUTION_DATE='2026-05-16T10:47:55.262561+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-16T10:47:55.262561+00:00'
+[2026-05-16T10:48:00.071+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-05-16T10:48:00.073+0000] {base.py:84} INFO - Using connection ID 'target_db' for task execution.
+[2026-05-16T10:48:00.075+0000] {sql.py:495} INFO - Running statement: SELECT COUNT(*) FROM staging.stg_employees;, parameters: None
+[2026-05-16T10:48:00.075+0000] {sql.py:504} INFO - Rows affected: 1
+[2026-05-16T10:48:00.075+0000] {full_load.py:104} INFO - [verify] staging.stg_employees → 12 sətir
+[2026-05-16T10:48:00.075+0000] {python.py:237} INFO - Done. Returned value was: None
+[2026-05-16T10:48:00.076+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-05-16T10:48:00.078+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=full_load_dag, task_id=verify_employees, run_id=manual__2026-05-16T10:47:55.262561+00:00, execution_date=20260516T104755, start_date=20260516T104800, end_date=20260516T104800
+[2026-05-16T10:48:00.123+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 0
+[2026-05-16T10:48:00.128+0000] {taskinstance.py:3503} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-16T10:48:00.129+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

@@ -1,0 +1,141 @@
+[2026-05-23T08:44:00.261+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-05-23T08:44:00.309+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: full_load_dag.execute_full_load manual__2026-05-23T08:43:58.979406+00:00 [queued]>
+[2026-05-23T08:44:00.327+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: full_load_dag.execute_full_load manual__2026-05-23T08:43:58.979406+00:00 [queued]>
+[2026-05-23T08:44:00.328+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2026-05-23T08:44:00.351+0000] {taskinstance.py:2890} INFO - Executing <Task(SQLExecuteQueryOperator): execute_full_load> on 2026-05-23 08:43:58.979406+00:00
+[2026-05-23T08:44:00.369+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'full_load_dag', 'execute_full_load', 'manual__2026-05-23T08:43:58.979406+00:00', '--job-id', '2', '--raw', '--subdir', 'DAGS_FOLDER/full_load.py', '--cfg-path', '/tmp/tmpmmysuul4']
+[2026-05-23T08:44:00.379+0000] {standard_task_runner.py:105} INFO - Job 2: Subtask execute_full_load
+[2026-05-23T08:44:00.384+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70 DeprecationWarning: This process (pid=729) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-05-23T08:44:00.386+0000] {standard_task_runner.py:72} INFO - Started process 730 to run task
+[2026-05-23T08:44:00.556+0000] {task_command.py:467} INFO - Running <TaskInstance: full_load_dag.execute_full_load manual__2026-05-23T08:43:58.979406+00:00 [running]> on host 8f2d94a59d0d
+[2026-05-23T08:44:00.733+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='full_load_dag' AIRFLOW_CTX_TASK_ID='execute_full_load' AIRFLOW_CTX_EXECUTION_DATE='2026-05-23T08:43:58.979406+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-23T08:43:58.979406+00:00'
+[2026-05-23T08:44:00.737+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2026-05-23T08:44:00.816+0000] {sql.py:295} INFO - Executing: -- stores full load
+TRUNCATE TABLE staging.stg_stores;
+INSERT INTO staging.stg_stores (
+        store_id,
+        store_name,
+        city,
+        country,
+        address,
+        phone,
+        email,
+        opened_date,
+        is_active,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT store_id,
+    store_name,
+    city,
+    country,
+    address,
+    phone,
+    email,
+    opened_date,
+    is_active,
+    NOW(),
+    'manual__2026-05-23T08:43:58.979406+00:00' -- unikal batch id
+FROM ext_source.stores;
+-- employees full load
+TRUNCATE TABLE staging.stg_employees;
+INSERT INTO staging.stg_employees (
+        employee_id,
+        store_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        hire_date,
+        job_title,
+        salary,
+        is_active,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT employee_id,
+    store_id,
+    first_name,
+    last_name,
+    email,
+    phone,
+    hire_date,
+    job_title,
+    salary,
+    is_active,
+    NOW(),
+    'manual__2026-05-23T08:43:58.979406+00:00'
+FROM ext_source.employees;
+[2026-05-23T08:44:00.818+0000] {crypto.py:82} WARNING - empty cryptography key - values will not be stored encrypted.
+[2026-05-23T08:44:00.819+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T08:44:00.824+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T08:44:00.840+0000] {sql.py:511} INFO - Running statement: -- stores full load
+TRUNCATE TABLE staging.stg_stores;
+INSERT INTO staging.stg_stores (
+        store_id,
+        store_name,
+        city,
+        country,
+        address,
+        phone,
+        email,
+        opened_date,
+        is_active,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT store_id,
+    store_name,
+    city,
+    country,
+    address,
+    phone,
+    email,
+    opened_date,
+    is_active,
+    NOW(),
+    'manual__2026-05-23T08:43:58.979406+00:00' -- unikal batch id
+FROM ext_source.stores;
+-- employees full load
+TRUNCATE TABLE staging.stg_employees;
+INSERT INTO staging.stg_employees (
+        employee_id,
+        store_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        hire_date,
+        job_title,
+        salary,
+        is_active,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT employee_id,
+    store_id,
+    first_name,
+    last_name,
+    email,
+    phone,
+    hire_date,
+    job_title,
+    salary,
+    is_active,
+    NOW(),
+    'manual__2026-05-23T08:43:58.979406+00:00'
+FROM ext_source.employees;, parameters: None
+[2026-05-23T08:44:00.883+0000] {sql.py:520} INFO - Rows affected: 12
+[2026-05-23T08:44:00.893+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/hooks/sql.py:470 DeprecationWarning: Import of fetch_all_handler from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T08:44:00.899+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/hooks/sql.py:471 DeprecationWarning: Import of return_single_query_results from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T08:44:00.907+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/hooks/sql.py:486 DeprecationWarning: Import of return_single_query_results from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T08:44:00.909+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/operators/sql.py:311 DeprecationWarning: Import of return_single_query_results from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T08:44:00.936+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2026-05-23T08:44:00.938+0000] {taskinstance.py:353} INFO - Marking task as SUCCESS. dag_id=full_load_dag, task_id=execute_full_load, run_id=manual__2026-05-23T08:43:58.979406+00:00, execution_date=20260523T084358, start_date=20260523T084400, end_date=20260523T084400
+[2026-05-23T08:44:01.054+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2026-05-23T08:44:01.091+0000] {taskinstance.py:3901} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-23T08:44:01.094+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

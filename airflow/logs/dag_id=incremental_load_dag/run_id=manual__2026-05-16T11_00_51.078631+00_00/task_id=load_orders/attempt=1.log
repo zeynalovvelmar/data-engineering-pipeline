@@ -1,0 +1,46 @@
+[2026-05-16T11:00:55.927+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-05-16T11:00:55.950+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: incremental_load_dag.load_orders manual__2026-05-16T11:00:51.078631+00:00 [queued]>
+[2026-05-16T11:00:55.955+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: incremental_load_dag.load_orders manual__2026-05-16T11:00:51.078631+00:00 [queued]>
+[2026-05-16T11:00:55.957+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 1
+[2026-05-16T11:00:55.965+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): load_orders> on 2026-05-16 11:00:51.078631+00:00
+[2026-05-16T11:00:55.970+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:62: DeprecationWarning: This process (pid=662) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2026-05-16T11:00:55.972+0000] {standard_task_runner.py:64} INFO - Started process 669 to run task
+[2026-05-16T11:00:55.971+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'incremental_load_dag', 'load_orders', 'manual__2026-05-16T11:00:51.078631+00:00', '--job-id', '105', '--raw', '--subdir', 'DAGS_FOLDER/inc_load.py', '--cfg-path', '/tmp/tmpc488oe4g']
+[2026-05-16T11:00:55.975+0000] {standard_task_runner.py:91} INFO - Job 105: Subtask load_orders
+[2026-05-16T11:00:56.001+0000] {task_command.py:426} INFO - Running <TaskInstance: incremental_load_dag.load_orders manual__2026-05-16T11:00:51.078631+00:00 [running]> on host 0161a3f0b6d6
+[2026-05-16T11:00:56.055+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='incremental_load_dag' AIRFLOW_CTX_TASK_ID='load_orders' AIRFLOW_CTX_EXECUTION_DATE='2026-05-16T11:00:51.078631+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-16T11:00:51.078631+00:00'
+[2026-05-16T11:00:56.055+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-05-16T11:00:56.072+0000] {base.py:84} INFO - Using connection ID 'source_db' for task execution.
+[2026-05-16T11:00:56.073+0000] {sql.py:495} INFO - Running statement: SELECT order_id, customer_id, store_id, employee_id, order_date, status, total_amount, created_at FROM orders WHERE created_at > %s;, parameters: ['2000-01-01 00:00:00']
+[2026-05-16T11:00:56.074+0000] {sql.py:504} INFO - Rows affected: 40
+[2026-05-16T11:00:56.077+0000] {base.py:84} INFO - Using connection ID 'target_db' for task execution.
+[2026-05-16T11:00:56.080+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-05-16T11:00:56.080+0000] {taskinstance.py:2905} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 401, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 235, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 252, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/inc_load.py", line 91, in incremental_load
+    cur.executemany(upsert_sql, [row + (batch_id,) for row in rows])
+psycopg2.errors.InvalidColumnReference: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+[2026-05-16T11:00:56.087+0000] {taskinstance.py:1206} INFO - Marking task as FAILED. dag_id=incremental_load_dag, task_id=load_orders, run_id=manual__2026-05-16T11:00:51.078631+00:00, execution_date=20260516T110051, start_date=20260516T110055, end_date=20260516T110056
+[2026-05-16T11:00:56.098+0000] {standard_task_runner.py:110} ERROR - Failed to execute job 105 for task load_orders (there is no unique or exclusion constraint matching the ON CONFLICT specification
+; 669)
+[2026-05-16T11:00:56.105+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 1
+[2026-05-16T11:00:56.113+0000] {taskinstance.py:3503} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-16T11:00:56.114+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

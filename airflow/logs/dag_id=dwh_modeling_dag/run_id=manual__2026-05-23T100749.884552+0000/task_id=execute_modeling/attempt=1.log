@@ -1,0 +1,341 @@
+[2026-05-23T10:07:51.004+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-05-23T10:07:51.039+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: dwh_modeling_dag.execute_modeling manual__2026-05-23T10:07:49.884552+00:00 [queued]>
+[2026-05-23T10:07:51.056+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: dwh_modeling_dag.execute_modeling manual__2026-05-23T10:07:49.884552+00:00 [queued]>
+[2026-05-23T10:07:51.058+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2026-05-23T10:07:51.081+0000] {taskinstance.py:2890} INFO - Executing <Task(SQLExecuteQueryOperator): execute_modeling> on 2026-05-23 10:07:49.884552+00:00
+[2026-05-23T10:07:51.098+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'dwh_modeling_dag', 'execute_modeling', 'manual__2026-05-23T10:07:49.884552+00:00', '--job-id', '9', '--raw', '--subdir', 'DAGS_FOLDER/dwh_layer.py', '--cfg-path', '/tmp/tmpiqw11v46']
+[2026-05-23T10:07:51.103+0000] {standard_task_runner.py:105} INFO - Job 9: Subtask execute_modeling
+[2026-05-23T10:07:51.110+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70 DeprecationWarning: This process (pid=4020) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-05-23T10:07:51.112+0000] {standard_task_runner.py:72} INFO - Started process 4021 to run task
+[2026-05-23T10:07:51.231+0000] {task_command.py:467} INFO - Running <TaskInstance: dwh_modeling_dag.execute_modeling manual__2026-05-23T10:07:49.884552+00:00 [running]> on host 8f2d94a59d0d
+[2026-05-23T10:07:51.401+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='dwh_modeling_dag' AIRFLOW_CTX_TASK_ID='execute_modeling' AIRFLOW_CTX_EXECUTION_DATE='2026-05-23T10:07:49.884552+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-23T10:07:49.884552+00:00'
+[2026-05-23T10:07:51.402+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2026-05-23T10:07:51.437+0000] {sql.py:295} INFO - Executing: INSERT INTO dwh.dim_store (
+        store_id,
+        store_name,
+        city,
+        country,
+        address,
+        phone,
+        email,
+        opened_date,
+        is_active,
+        is_current
+    )
+SELECT store_id,
+    store_name,
+    city,
+    country,
+    address,
+    phone,
+    email,
+    opened_date,
+    is_active,
+    TRUE
+FROM staging.stg_stores ON CONFLICT (store_id) DO
+UPDATE
+SET store_name = EXCLUDED.store_name,
+    city = EXCLUDED.city,
+    is_active = EXCLUDED.is_active;
+-- DIM_PRODUCT
+INSERT INTO dwh.dim_product (
+        product_id,
+        product_name,
+        category,
+        brand,
+        price,
+        cost,
+        is_active,
+        is_current
+    )
+SELECT product_id,
+    product_name,
+    category,
+    brand,
+    price,
+    cost,
+    is_active,
+    TRUE
+FROM staging.stg_products ON CONFLICT (product_id) DO
+UPDATE
+SET price = EXCLUDED.price,
+    cost = EXCLUDED.cost,
+    is_active = EXCLUDED.is_active;
+-- DIM_CUSTOMER 
+INSERT INTO dwh.dim_customer (
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        city,
+        country,
+        birth_date,
+        age_group,
+        gender,
+        is_current
+    )
+SELECT customer_id,
+    first_name,
+    last_name,
+    email,
+    city,
+    country,
+    birth_date,
+    CASE
+        WHEN birth_date > CURRENT_DATE - INTERVAL '25 years' THEN '18-25'
+        WHEN birth_date > CURRENT_DATE - INTERVAL '35 years' THEN '26-35'
+        ELSE '36+'
+    END,
+    gender,
+    TRUE
+FROM staging.stg_customers ON CONFLICT (customer_id) DO
+UPDATE
+SET email = EXCLUDED.email,
+    age_group = EXCLUDED.age_group;
+-- FACT_SALES
+INSERT INTO dwh.fact_sales (
+        date_key,
+        customer_key,
+        product_key,
+        store_key,
+        order_id,
+        item_id,
+        quantity,
+        unit_price,
+        discount,
+        gross_amount,
+        net_amount,
+        profit_amount,
+        order_status
+    )
+SELECT TO_CHAR(o.order_date, 'YYYYMMDD')::INT,
+    dc.customer_key,
+    dp.product_key,
+    ds.store_key,
+    o.order_id,
+    oi.item_id,
+    oi.quantity,
+    oi.unit_price,
+    oi.discount,
+    (oi.quantity * oi.unit_price),
+    (oi.quantity * oi.unit_price) - oi.discount,
+    ((oi.quantity * oi.unit_price) - oi.discount) - (oi.quantity * dp.cost),
+    o.status
+FROM staging.stg_orders o
+    JOIN staging.stg_order_items oi ON o.order_id = oi.order_id
+    JOIN dwh.dim_customer dc ON o.customer_id = dc.customer_id
+    JOIN dwh.dim_product dp ON oi.product_id = dp.product_id
+    JOIN dwh.dim_store ds ON o.store_id = ds.store_id
+WHERE NOT EXISTS (
+        SELECT 1
+        FROM dwh.fact_sales fs
+        WHERE fs.item_id = oi.item_id
+    );
+[2026-05-23T10:07:51.439+0000] {crypto.py:82} WARNING - empty cryptography key - values will not be stored encrypted.
+[2026-05-23T10:07:51.441+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T10:07:51.448+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T10:07:51.463+0000] {sql.py:511} INFO - Running statement: INSERT INTO dwh.dim_store (
+        store_id,
+        store_name,
+        city,
+        country,
+        address,
+        phone,
+        email,
+        opened_date,
+        is_active,
+        is_current
+    )
+SELECT store_id,
+    store_name,
+    city,
+    country,
+    address,
+    phone,
+    email,
+    opened_date,
+    is_active,
+    TRUE
+FROM staging.stg_stores ON CONFLICT (store_id) DO
+UPDATE
+SET store_name = EXCLUDED.store_name,
+    city = EXCLUDED.city,
+    is_active = EXCLUDED.is_active;
+-- DIM_PRODUCT
+INSERT INTO dwh.dim_product (
+        product_id,
+        product_name,
+        category,
+        brand,
+        price,
+        cost,
+        is_active,
+        is_current
+    )
+SELECT product_id,
+    product_name,
+    category,
+    brand,
+    price,
+    cost,
+    is_active,
+    TRUE
+FROM staging.stg_products ON CONFLICT (product_id) DO
+UPDATE
+SET price = EXCLUDED.price,
+    cost = EXCLUDED.cost,
+    is_active = EXCLUDED.is_active;
+-- DIM_CUSTOMER 
+INSERT INTO dwh.dim_customer (
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        city,
+        country,
+        birth_date,
+        age_group,
+        gender,
+        is_current
+    )
+SELECT customer_id,
+    first_name,
+    last_name,
+    email,
+    city,
+    country,
+    birth_date,
+    CASE
+        WHEN birth_date > CURRENT_DATE - INTERVAL '25 years' THEN '18-25'
+        WHEN birth_date > CURRENT_DATE - INTERVAL '35 years' THEN '26-35'
+        ELSE '36+'
+    END,
+    gender,
+    TRUE
+FROM staging.stg_customers ON CONFLICT (customer_id) DO
+UPDATE
+SET email = EXCLUDED.email,
+    age_group = EXCLUDED.age_group;
+-- FACT_SALES
+INSERT INTO dwh.fact_sales (
+        date_key,
+        customer_key,
+        product_key,
+        store_key,
+        order_id,
+        item_id,
+        quantity,
+        unit_price,
+        discount,
+        gross_amount,
+        net_amount,
+        profit_amount,
+        order_status
+    )
+SELECT TO_CHAR(o.order_date, 'YYYYMMDD')::INT,
+    dc.customer_key,
+    dp.product_key,
+    ds.store_key,
+    o.order_id,
+    oi.item_id,
+    oi.quantity,
+    oi.unit_price,
+    oi.discount,
+    (oi.quantity * oi.unit_price),
+    (oi.quantity * oi.unit_price) - oi.discount,
+    ((oi.quantity * oi.unit_price) - oi.discount) - (oi.quantity * dp.cost),
+    o.status
+FROM staging.stg_orders o
+    JOIN staging.stg_order_items oi ON o.order_id = oi.order_id
+    JOIN dwh.dim_customer dc ON o.customer_id = dc.customer_id
+    JOIN dwh.dim_product dp ON oi.product_id = dp.product_id
+    JOIN dwh.dim_store ds ON o.store_id = ds.store_id
+WHERE NOT EXISTS (
+        SELECT 1
+        FROM dwh.fact_sales fs
+        WHERE fs.item_id = oi.item_id
+    );, parameters: None
+[2026-05-23T10:07:51.475+0000] {taskinstance.py:3313} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 768, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/operators/sql.py", line 301, in execute
+    output = hook.run(
+             ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 467, in run
+    self._run_command(cur, sql_statement, parameters)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 516, in _run_command
+    cur.execute(sql_statement)
+psycopg2.errors.InvalidColumnReference: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+[2026-05-23T10:07:51.504+0000] {taskinstance.py:1226} INFO - Marking task as FAILED. dag_id=dwh_modeling_dag, task_id=execute_modeling, run_id=manual__2026-05-23T10:07:49.884552+00:00, execution_date=20260523T100749, start_date=20260523T100751, end_date=20260523T100751
+[2026-05-23T10:07:51.569+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2026-05-23T10:07:51.570+0000] {standard_task_runner.py:124} ERROR - Failed to execute job 9 for task execute_modeling (there is no unique or exclusion constraint matching the ON CONFLICT specification
+; 4021)
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/task/task_runner/standard_task_runner.py", line 117, in _start_by_fork
+    ret = args.func(args, dag=self.dag)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 256, in _run_task_by_selected_method
+    return _run_raw_task(args, ti)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 341, in _run_raw_task
+    return ti._run_raw_task(
+           ^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3006, in _run_raw_task
+    return _run_raw_task(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 274, in _run_raw_task
+    TaskInstance._execute_task_with_callbacks(
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3161, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3185, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 768, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/operators/sql.py", line 301, in execute
+    output = hook.run(
+             ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 467, in run
+    self._run_command(cur, sql_statement, parameters)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 516, in _run_command
+    cur.execute(sql_statement)
+psycopg2.errors.InvalidColumnReference: there is no unique or exclusion constraint matching the ON CONFLICT specification
+
+[2026-05-23T10:07:51.612+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 1
+[2026-05-23T10:07:51.645+0000] {taskinstance.py:3901} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-23T10:07:51.649+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

@@ -1,0 +1,22 @@
+services:
+  target_db:
+    image: postgres:16
+    container_name: de_target_db
+    environment:
+      POSTGRES_DB: target_db
+      POSTGRES_USER: target_user
+      POSTGRES_PASSWORD: target_pass
+    ports:
+      - "5461:5432"
+    volumes:
+      - target_pgdata:/var/lib/postgresql/data
+      - ./init_target.sql:/docker-entrypoint-initdb.d/init_target.sql
+    networks:
+      - data_pipeline_net
+
+volumes:
+  target_pgdata:
+
+networks:
+  data_pipeline_net:
+    external: true

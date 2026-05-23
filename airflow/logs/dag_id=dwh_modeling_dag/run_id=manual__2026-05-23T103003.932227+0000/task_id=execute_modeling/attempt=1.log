@@ -1,0 +1,385 @@
+[2026-05-23T10:30:05.351+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-05-23T10:30:05.411+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: dwh_modeling_dag.execute_modeling manual__2026-05-23T10:30:03.932227+00:00 [queued]>
+[2026-05-23T10:30:05.430+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: dwh_modeling_dag.execute_modeling manual__2026-05-23T10:30:03.932227+00:00 [queued]>
+[2026-05-23T10:30:05.432+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2026-05-23T10:30:05.461+0000] {taskinstance.py:2890} INFO - Executing <Task(SQLExecuteQueryOperator): execute_modeling> on 2026-05-23 10:30:03.932227+00:00
+[2026-05-23T10:30:05.478+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'dwh_modeling_dag', 'execute_modeling', 'manual__2026-05-23T10:30:03.932227+00:00', '--job-id', '22', '--raw', '--subdir', 'DAGS_FOLDER/dwh_layer.py', '--cfg-path', '/tmp/tmpxp21k1ha']
+[2026-05-23T10:30:05.485+0000] {standard_task_runner.py:105} INFO - Job 22: Subtask execute_modeling
+[2026-05-23T10:30:05.495+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70 DeprecationWarning: This process (pid=4934) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-05-23T10:30:05.497+0000] {standard_task_runner.py:72} INFO - Started process 4935 to run task
+[2026-05-23T10:30:05.639+0000] {task_command.py:467} INFO - Running <TaskInstance: dwh_modeling_dag.execute_modeling manual__2026-05-23T10:30:03.932227+00:00 [running]> on host 8f2d94a59d0d
+[2026-05-23T10:30:05.853+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='dwh_modeling_dag' AIRFLOW_CTX_TASK_ID='execute_modeling' AIRFLOW_CTX_EXECUTION_DATE='2026-05-23T10:30:03.932227+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-23T10:30:03.932227+00:00'
+[2026-05-23T10:30:05.856+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2026-05-23T10:30:05.903+0000] {sql.py:295} INFO - Executing: -- 1. DIM_STORE (Sütunlar: store_id, store_name, city, country, address, phone, email, opened_date, is_active, is_current, dwh_created_at, dwh_updated_at)
+INSERT INTO dwh.dim_store (
+        store_id,
+        store_name,
+        city,
+        country,
+        address,
+        phone,
+        email,
+        opened_date,
+        is_active,
+        is_current,
+        dwh_created_at,
+        dwh_updated_at
+    )
+SELECT store_id,
+    store_name,
+    city,
+    country,
+    address,
+    phone,
+    email,
+    opened_date,
+    is_active,
+    TRUE,
+    NOW(),
+    NOW()
+FROM staging.stg_stores ON CONFLICT (store_id) DO
+UPDATE
+SET store_name = EXCLUDED.store_name,
+    city = EXCLUDED.city,
+    is_active = EXCLUDED.is_active,
+    dwh_updated_at = NOW();
+-- 2. DIM_PRODUCT (Sütunlar: product_id, product_name, category, brand, price, cost, margin, margin_pct, stock_quantity, is_active, is_current, effective_from, effective_to, dwh_created_at)
+INSERT INTO dwh.dim_product (
+        product_id,
+        product_name,
+        category,
+        brand,
+        price,
+        cost,
+        stock_quantity,
+        is_active,
+        is_current,
+        effective_from,
+        effective_to,
+        dwh_created_at
+    )
+SELECT product_id,
+    product_name,
+    category,
+    brand,
+    price,
+    cost,
+    stock_quantity,
+    is_active,
+    TRUE,
+    CURRENT_DATE,
+    '9999-12-31',
+    NOW()
+FROM staging.stg_products ON CONFLICT (product_id) DO
+UPDATE
+SET price = EXCLUDED.price,
+    cost = EXCLUDED.cost,
+    is_active = EXCLUDED.is_active;
+-- 3. DIM_CUSTOMER (Sütunlar: customer_id, first_name, last_name, email, phone, city, country, birth_date, age_group, gender, is_current, effective_from, effective_to, dwh_created_at)
+INSERT INTO dwh.dim_customer (
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        city,
+        country,
+        birth_date,
+        age_group,
+        gender,
+        is_current,
+        effective_from,
+        effective_to,
+        dwh_created_at
+    )
+SELECT customer_id,
+    first_name,
+    last_name,
+    email,
+    phone,
+    city,
+    country,
+    birth_date,
+    CASE
+        WHEN birth_date > CURRENT_DATE - INTERVAL '25 years' THEN '18-25'
+        WHEN birth_date > CURRENT_DATE - INTERVAL '35 years' THEN '26-35'
+        ELSE '36+'
+    END,
+    gender,
+    TRUE,
+    CURRENT_DATE,
+    '9999-12-31',
+    NOW()
+FROM staging.stg_customers ON CONFLICT (customer_id) DO
+UPDATE
+SET email = EXCLUDED.email,
+    age_group = EXCLUDED.age_group;
+-- 4. DIM_EMPLOYEE (Sütunlar: employee_id, first_name, last_name, email, phone, job_title, salary, is_active, is_current, dwh_created_at, dwh_updated_at)
+INSERT INTO dwh.dim_employee (
+        employee_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        job_title,
+        salary,
+        is_active,
+        is_current,
+        dwh_created_at,
+        dwh_updated_at
+    )
+SELECT employee_id,
+    first_name,
+    last_name,
+    email,
+    phone,
+    job_title,
+    salary,
+    is_active,
+    TRUE,
+    NOW(),
+    NOW()
+FROM staging.stg_employees ON CONFLICT (employee_id) DO
+UPDATE
+SET salary = EXCLUDED.salary,
+    job_title = EXCLUDED.job_title,
+    dwh_updated_at = NOW();
+-- 5. FACT_SALES (Sütunlar: date_key, customer_key, product_key, store_key, employee_key, order_id, item_id, quantity, unit_price, discount, gross_amount, net_amount, profit_amount, order_status, dwh_created_at)
+INSERT INTO dwh.fact_sales (
+        date_key,
+        customer_key,
+        product_key,
+        store_key,
+        employee_key,
+        order_id,
+        item_id,
+        quantity,
+        unit_price,
+        discount,
+        gross_amount,
+        net_amount,
+        profit_amount,
+        order_status,
+        dwh_created_at
+    )
+SELECT TO_CHAR(o.order_date, 'YYYYMMDD')::INT,
+    dc.customer_key,
+    dp.product_key,
+    ds.store_key,
+    de.employee_key,
+    o.order_id,
+    oi.item_id,
+    oi.quantity,
+    oi.unit_price,
+    oi.discount,
+    (oi.quantity * oi.unit_price),
+    (oi.quantity * oi.unit_price) - oi.discount,
+    ((oi.quantity * oi.unit_price) - oi.discount) - (oi.quantity * dp.cost),
+    o.status,
+    NOW()
+FROM staging.stg_orders o
+    JOIN staging.stg_order_items oi ON o.order_id = oi.order_id
+    JOIN dwh.dim_customer dc ON o.customer_id = dc.customer_id
+    JOIN dwh.dim_product dp ON oi.product_id = dp.product_id
+    JOIN dwh.dim_store ds ON o.store_id = ds.store_id
+    JOIN dwh.dim_employee de ON o.employee_id = de.employee_id
+WHERE NOT EXISTS (
+        SELECT 1
+        FROM dwh.fact_sales fs
+        WHERE fs.item_id = oi.item_id
+    );
+[2026-05-23T10:30:05.906+0000] {crypto.py:82} WARNING - empty cryptography key - values will not be stored encrypted.
+[2026-05-23T10:30:05.908+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T10:30:05.917+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T10:30:05.937+0000] {sql.py:511} INFO - Running statement: -- 1. DIM_STORE (Sütunlar: store_id, store_name, city, country, address, phone, email, opened_date, is_active, is_current, dwh_created_at, dwh_updated_at)
+INSERT INTO dwh.dim_store (
+        store_id,
+        store_name,
+        city,
+        country,
+        address,
+        phone,
+        email,
+        opened_date,
+        is_active,
+        is_current,
+        dwh_created_at,
+        dwh_updated_at
+    )
+SELECT store_id,
+    store_name,
+    city,
+    country,
+    address,
+    phone,
+    email,
+    opened_date,
+    is_active,
+    TRUE,
+    NOW(),
+    NOW()
+FROM staging.stg_stores ON CONFLICT (store_id) DO
+UPDATE
+SET store_name = EXCLUDED.store_name,
+    city = EXCLUDED.city,
+    is_active = EXCLUDED.is_active,
+    dwh_updated_at = NOW();
+-- 2. DIM_PRODUCT (Sütunlar: product_id, product_name, category, brand, price, cost, margin, margin_pct, stock_quantity, is_active, is_current, effective_from, effective_to, dwh_created_at)
+INSERT INTO dwh.dim_product (
+        product_id,
+        product_name,
+        category,
+        brand,
+        price,
+        cost,
+        stock_quantity,
+        is_active,
+        is_current,
+        effective_from,
+        effective_to,
+        dwh_created_at
+    )
+SELECT product_id,
+    product_name,
+    category,
+    brand,
+    price,
+    cost,
+    stock_quantity,
+    is_active,
+    TRUE,
+    CURRENT_DATE,
+    '9999-12-31',
+    NOW()
+FROM staging.stg_products ON CONFLICT (product_id) DO
+UPDATE
+SET price = EXCLUDED.price,
+    cost = EXCLUDED.cost,
+    is_active = EXCLUDED.is_active;
+-- 3. DIM_CUSTOMER (Sütunlar: customer_id, first_name, last_name, email, phone, city, country, birth_date, age_group, gender, is_current, effective_from, effective_to, dwh_created_at)
+INSERT INTO dwh.dim_customer (
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        city,
+        country,
+        birth_date,
+        age_group,
+        gender,
+        is_current,
+        effective_from,
+        effective_to,
+        dwh_created_at
+    )
+SELECT customer_id,
+    first_name,
+    last_name,
+    email,
+    phone,
+    city,
+    country,
+    birth_date,
+    CASE
+        WHEN birth_date > CURRENT_DATE - INTERVAL '25 years' THEN '18-25'
+        WHEN birth_date > CURRENT_DATE - INTERVAL '35 years' THEN '26-35'
+        ELSE '36+'
+    END,
+    gender,
+    TRUE,
+    CURRENT_DATE,
+    '9999-12-31',
+    NOW()
+FROM staging.stg_customers ON CONFLICT (customer_id) DO
+UPDATE
+SET email = EXCLUDED.email,
+    age_group = EXCLUDED.age_group;
+-- 4. DIM_EMPLOYEE (Sütunlar: employee_id, first_name, last_name, email, phone, job_title, salary, is_active, is_current, dwh_created_at, dwh_updated_at)
+INSERT INTO dwh.dim_employee (
+        employee_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        job_title,
+        salary,
+        is_active,
+        is_current,
+        dwh_created_at,
+        dwh_updated_at
+    )
+SELECT employee_id,
+    first_name,
+    last_name,
+    email,
+    phone,
+    job_title,
+    salary,
+    is_active,
+    TRUE,
+    NOW(),
+    NOW()
+FROM staging.stg_employees ON CONFLICT (employee_id) DO
+UPDATE
+SET salary = EXCLUDED.salary,
+    job_title = EXCLUDED.job_title,
+    dwh_updated_at = NOW();
+-- 5. FACT_SALES (Sütunlar: date_key, customer_key, product_key, store_key, employee_key, order_id, item_id, quantity, unit_price, discount, gross_amount, net_amount, profit_amount, order_status, dwh_created_at)
+INSERT INTO dwh.fact_sales (
+        date_key,
+        customer_key,
+        product_key,
+        store_key,
+        employee_key,
+        order_id,
+        item_id,
+        quantity,
+        unit_price,
+        discount,
+        gross_amount,
+        net_amount,
+        profit_amount,
+        order_status,
+        dwh_created_at
+    )
+SELECT TO_CHAR(o.order_date, 'YYYYMMDD')::INT,
+    dc.customer_key,
+    dp.product_key,
+    ds.store_key,
+    de.employee_key,
+    o.order_id,
+    oi.item_id,
+    oi.quantity,
+    oi.unit_price,
+    oi.discount,
+    (oi.quantity * oi.unit_price),
+    (oi.quantity * oi.unit_price) - oi.discount,
+    ((oi.quantity * oi.unit_price) - oi.discount) - (oi.quantity * dp.cost),
+    o.status,
+    NOW()
+FROM staging.stg_orders o
+    JOIN staging.stg_order_items oi ON o.order_id = oi.order_id
+    JOIN dwh.dim_customer dc ON o.customer_id = dc.customer_id
+    JOIN dwh.dim_product dp ON oi.product_id = dp.product_id
+    JOIN dwh.dim_store ds ON o.store_id = ds.store_id
+    JOIN dwh.dim_employee de ON o.employee_id = de.employee_id
+WHERE NOT EXISTS (
+        SELECT 1
+        FROM dwh.fact_sales fs
+        WHERE fs.item_id = oi.item_id
+    );, parameters: None
+[2026-05-23T10:30:05.991+0000] {sql.py:520} INFO - Rows affected: 56
+[2026-05-23T10:30:06.011+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/hooks/sql.py:470 DeprecationWarning: Import of fetch_all_handler from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T10:30:06.017+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/hooks/sql.py:471 DeprecationWarning: Import of return_single_query_results from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T10:30:06.030+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/hooks/sql.py:486 DeprecationWarning: Import of return_single_query_results from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T10:30:06.033+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/providers/common/sql/operators/sql.py:311 DeprecationWarning: Import of return_single_query_results from the '***.providers.common.sql.hooks' module is deprecated and will
+be removed in the future. Please import it from '***.providers.common.sql.hooks.handlers'.
+[2026-05-23T10:30:06.058+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2026-05-23T10:30:06.060+0000] {taskinstance.py:353} INFO - Marking task as SUCCESS. dag_id=dwh_modeling_dag, task_id=execute_modeling, run_id=manual__2026-05-23T10:30:03.932227+00:00, execution_date=20260523T103003, start_date=20260523T103005, end_date=20260523T103006
+[2026-05-23T10:30:06.161+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2026-05-23T10:30:06.218+0000] {taskinstance.py:3901} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-23T10:30:06.223+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

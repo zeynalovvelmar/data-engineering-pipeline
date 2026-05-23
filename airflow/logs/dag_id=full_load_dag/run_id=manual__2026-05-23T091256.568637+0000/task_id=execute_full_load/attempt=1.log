@@ -1,0 +1,441 @@
+[2026-05-23T09:12:58.632+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-05-23T09:12:58.674+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: full_load_dag.execute_full_load manual__2026-05-23T09:12:56.568637+00:00 [queued]>
+[2026-05-23T09:12:58.692+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: full_load_dag.execute_full_load manual__2026-05-23T09:12:56.568637+00:00 [queued]>
+[2026-05-23T09:12:58.693+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 1
+[2026-05-23T09:12:58.716+0000] {taskinstance.py:2890} INFO - Executing <Task(SQLExecuteQueryOperator): execute_full_load> on 2026-05-23 09:12:56.568637+00:00
+[2026-05-23T09:12:58.733+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'full_load_dag', 'execute_full_load', 'manual__2026-05-23T09:12:56.568637+00:00', '--job-id', '5', '--raw', '--subdir', 'DAGS_FOLDER/full_load.py', '--cfg-path', '/tmp/tmpx2o1_bcs']
+[2026-05-23T09:12:58.740+0000] {standard_task_runner.py:105} INFO - Job 5: Subtask execute_full_load
+[2026-05-23T09:12:58.742+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70 DeprecationWarning: This process (pid=1883) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-05-23T09:12:58.744+0000] {standard_task_runner.py:72} INFO - Started process 1884 to run task
+[2026-05-23T09:12:58.869+0000] {task_command.py:467} INFO - Running <TaskInstance: full_load_dag.execute_full_load manual__2026-05-23T09:12:56.568637+00:00 [running]> on host 8f2d94a59d0d
+[2026-05-23T09:12:59.041+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='full_load_dag' AIRFLOW_CTX_TASK_ID='execute_full_load' AIRFLOW_CTX_EXECUTION_DATE='2026-05-23T09:12:56.568637+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-23T09:12:56.568637+00:00'
+[2026-05-23T09:12:59.042+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2026-05-23T09:12:59.076+0000] {sql.py:295} INFO - Executing: -- stores full load
+TRUNCATE TABLE staging.stg_stores;
+INSERT INTO staging.stg_stores (
+        store_id,
+        store_name,
+        city,
+        country,
+        address,
+        phone,
+        email,
+        opened_date,
+        is_active,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT store_id,
+    store_name,
+    city,
+    country,
+    address,
+    phone,
+    email,
+    opened_date,
+    is_active,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00' -- unikal batch id
+FROM ext_source.stores;
+-- employees full load
+TRUNCATE TABLE staging.stg_employees;
+INSERT INTO staging.stg_employees (
+        employee_id,
+        store_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        hire_date,
+        job_title,
+        salary,
+        is_active,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT employee_id,
+    store_id,
+    first_name,
+    last_name,
+    email,
+    phone,
+    hire_date,
+    job_title,
+    salary,
+    is_active,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00'
+FROM ext_source.employees;
+-- CUSTOMERS full load
+TRUNCATE TABLE staging.stg_customers;
+INSERT INTO staging.stg_customers (
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        city,
+        country,
+        birth_date,
+        gender,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT customer_id,
+    first_name,
+    last_name,
+    email,
+    phone,
+    city,
+    country,
+    birth_date,
+    gender,
+    created_at,
+    updated_at,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00'
+FROM ext_source.customers;
+-- PRODUCTS full load
+TRUNCATE TABLE staging.stg_products;
+INSERT INTO staging.stg_products (
+        product_id,
+        product_name,
+        category,
+        brand,
+        price,
+        cost,
+        stock_quantity,
+        is_active,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT product_id,
+    product_name,
+    category,
+    brand,
+    price,
+    cost,
+    stock_quantity,
+    is_active,
+    created_at,
+    updated_at,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00'
+FROM ext_source.products;
+-- ORDERS full load
+TRUNCATE TABLE staging.stg_orders;
+INSERT INTO staging.stg_orders (
+        order_id,
+        customer_id,
+        store_id,
+        employee_id,
+        order_date,
+        status,
+        total_amount,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT order_id,
+    customer_id,
+    store_id,
+    employee_id,
+    order_date,
+    status,
+    total_amount,
+    created_at,
+    updated_at,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00'
+FROM ext_source.orders;
+-- ORDER_ITEMS full load
+TRUNCATE TABLE staging.stg_order_items;
+INSERT INTO staging.stg_order_items (
+        item_id,
+        order_id,
+        product_id,
+        quantity,
+        unit_price,
+        discount,
+        total_price,
+        created_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT item_id,
+    order_id,
+    product_id,
+    quantity,
+    unit_price,
+    discount,
+    total_price,
+    created_at,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00'
+FROM ext_source.order_items;
+[2026-05-23T09:12:59.079+0000] {crypto.py:82} WARNING - empty cryptography key - values will not be stored encrypted.
+[2026-05-23T09:12:59.081+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T09:12:59.090+0000] {base.py:84} INFO - Retrieving connection 'target_db'
+[2026-05-23T09:12:59.105+0000] {sql.py:511} INFO - Running statement: -- stores full load
+TRUNCATE TABLE staging.stg_stores;
+INSERT INTO staging.stg_stores (
+        store_id,
+        store_name,
+        city,
+        country,
+        address,
+        phone,
+        email,
+        opened_date,
+        is_active,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT store_id,
+    store_name,
+    city,
+    country,
+    address,
+    phone,
+    email,
+    opened_date,
+    is_active,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00' -- unikal batch id
+FROM ext_source.stores;
+-- employees full load
+TRUNCATE TABLE staging.stg_employees;
+INSERT INTO staging.stg_employees (
+        employee_id,
+        store_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        hire_date,
+        job_title,
+        salary,
+        is_active,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT employee_id,
+    store_id,
+    first_name,
+    last_name,
+    email,
+    phone,
+    hire_date,
+    job_title,
+    salary,
+    is_active,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00'
+FROM ext_source.employees;
+-- CUSTOMERS full load
+TRUNCATE TABLE staging.stg_customers;
+INSERT INTO staging.stg_customers (
+        customer_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        city,
+        country,
+        birth_date,
+        gender,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT customer_id,
+    first_name,
+    last_name,
+    email,
+    phone,
+    city,
+    country,
+    birth_date,
+    gender,
+    created_at,
+    updated_at,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00'
+FROM ext_source.customers;
+-- PRODUCTS full load
+TRUNCATE TABLE staging.stg_products;
+INSERT INTO staging.stg_products (
+        product_id,
+        product_name,
+        category,
+        brand,
+        price,
+        cost,
+        stock_quantity,
+        is_active,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT product_id,
+    product_name,
+    category,
+    brand,
+    price,
+    cost,
+    stock_quantity,
+    is_active,
+    created_at,
+    updated_at,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00'
+FROM ext_source.products;
+-- ORDERS full load
+TRUNCATE TABLE staging.stg_orders;
+INSERT INTO staging.stg_orders (
+        order_id,
+        customer_id,
+        store_id,
+        employee_id,
+        order_date,
+        status,
+        total_amount,
+        created_at,
+        updated_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT order_id,
+    customer_id,
+    store_id,
+    employee_id,
+    order_date,
+    status,
+    total_amount,
+    created_at,
+    updated_at,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00'
+FROM ext_source.orders;
+-- ORDER_ITEMS full load
+TRUNCATE TABLE staging.stg_order_items;
+INSERT INTO staging.stg_order_items (
+        item_id,
+        order_id,
+        product_id,
+        quantity,
+        unit_price,
+        discount,
+        total_price,
+        created_at,
+        etl_load_date,
+        etl_batch_id
+    )
+SELECT item_id,
+    order_id,
+    product_id,
+    quantity,
+    unit_price,
+    discount,
+    total_price,
+    created_at,
+    NOW(),
+    'manual__2026-05-23T09:12:56.568637+00:00'
+FROM ext_source.order_items;, parameters: None
+[2026-05-23T09:12:59.164+0000] {taskinstance.py:3313} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 768, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/operators/sql.py", line 301, in execute
+    output = hook.run(
+             ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 467, in run
+    self._run_command(cur, sql_statement, parameters)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 516, in _run_command
+    cur.execute(sql_statement)
+psycopg2.errors.UndefinedColumn: column "updated_at" of relation "stg_orders" does not exist
+LINE 128:         updated_at,
+                  ^
+
+[2026-05-23T09:12:59.195+0000] {taskinstance.py:1226} INFO - Marking task as FAILED. dag_id=full_load_dag, task_id=execute_full_load, run_id=manual__2026-05-23T09:12:56.568637+00:00, execution_date=20260523T091256, start_date=20260523T091258, end_date=20260523T091259
+[2026-05-23T09:12:59.255+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2026-05-23T09:12:59.256+0000] {standard_task_runner.py:124} ERROR - Failed to execute job 5 for task execute_full_load (column "updated_at" of relation "stg_orders" does not exist
+LINE 128:         updated_at,
+                  ^
+; 1884)
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/task/task_runner/standard_task_runner.py", line 117, in _start_by_fork
+    ret = args.func(args, dag=self.dag)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/cli.py", line 116, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 483, in task_run
+    task_return_code = _run_task_by_selected_method(args, _dag, ti)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 256, in _run_task_by_selected_method
+    return _run_raw_task(args, ti)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/cli/commands/task_command.py", line 341, in _run_raw_task
+    return ti._run_raw_task(
+           ^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/session.py", line 97, in wrapper
+    return func(*args, session=session, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3006, in _run_raw_task
+    return _run_raw_task(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 274, in _run_raw_task
+    TaskInstance._execute_task_with_callbacks(
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3161, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3185, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 768, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 734, in _execute_callable
+    return ExecutionCallableRunner(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/operator_helpers.py", line 252, in run
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 424, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/operators/sql.py", line 301, in execute
+    output = hook.run(
+             ^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 467, in run
+    self._run_command(cur, sql_statement, parameters)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/common/sql/hooks/sql.py", line 516, in _run_command
+    cur.execute(sql_statement)
+psycopg2.errors.UndefinedColumn: column "updated_at" of relation "stg_orders" does not exist
+LINE 128:         updated_at,
+                  ^
+
+[2026-05-23T09:12:59.284+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 1
+[2026-05-23T09:12:59.335+0000] {taskinstance.py:3901} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-05-23T09:12:59.343+0000] {local_task_job_runner.py:245} INFO - ::endgroup::
