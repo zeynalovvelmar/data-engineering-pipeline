@@ -1,4 +1,6 @@
-env
+.vscode/
+airflow/logs/
+airflow/.env
+.env
 __pycache__/
-.venv/
-target_pgdata/
+*.pyc

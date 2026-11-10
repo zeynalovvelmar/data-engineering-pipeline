@@ -118,7 +118,7 @@ INSERT INTO employees (store_id, first_name, last_name, email, phone, hire_date,
     (5, 'Lala',   'Mustafayeva', 'lale.mustafayeva@techmart.az', '+994505550001', '2022-04-05', 'Store Manager',   2700.00, TRUE),
     (5, 'Orxan',  'Hasanov',     'orxan.hasanov@techmart.az',    '+994505550002', '2022-06-15', 'Sales Associate', 1400.00, TRUE);
 
-select * from customers
+-- select * from customers;
 INSERT INTO customers (first_name, last_name, email, phone, city, country, birth_date, gender, created_at, updated_at) VALUES
     ('Ali',     'Huseynov',      'ali.huseynov@gmail.com',       '+994501234501', 'Baki',     'Azerbaijan', '1990-04-12', 'M', '2023-01-05 09:10:00', '2023-01-05 09:10:00'),
     ('Gunel',   'Aliyeva',       'gunel.aliyeva@gmail.com',      '+994501234502', 'Baki',     'Azerbaijan', '1995-07-23', 'F', '2023-01-18 11:22:00', '2024-03-10 14:00:00'),

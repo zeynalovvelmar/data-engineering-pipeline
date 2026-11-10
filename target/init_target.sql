@@ -5,8 +5,8 @@ CREATE SCHEMA IF NOT EXISTS dwh;
 CREATE SCHEMA IF NOT EXISTS data_mart;
 -----
 
-select * from staging.stg_stores
-select * from staging.stg_employees
+-- select * from staging.stg_stores;
+-- select * from staging.stg_employees;
 
 CREATE TABLE IF NOT EXISTS staging.stg_stores (
     store_id     INT           NOT NULL,
